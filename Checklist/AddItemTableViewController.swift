@@ -15,6 +15,8 @@ class AddItemTableViewController: UITableViewController {
         navigationItem.largeTitleDisplayMode = .never
     }
     
+    @IBOutlet weak var addButton: UIBarButtonItem!
+    @IBOutlet weak var cancelButton: UIBarButtonItem!
     @IBOutlet weak var textField: UITextField!
 
     @IBAction func cancel(_ sender: UIBarButtonItem) {
@@ -22,7 +24,7 @@ class AddItemTableViewController: UITableViewController {
     }
 
     @IBAction func add(_ sender: Any) {
-        print(" User added: \(textField.text!)")
+        navigationController?.popViewController(animated: true)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -39,5 +41,22 @@ extension AddItemTableViewController: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
         return false
+    }
+    
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        guard let oldText = textField.text,
+            let stringRange = Range(range, in: oldText)
+        else {
+            return false
+        }
+        
+        let newText = oldText.replacingCharacters(in: stringRange, with: string)
+        if newText.isEmpty {
+            addButton.isEnabled = false
+        } else {
+            addButton.isEnabled = true
+        }
+        
+        return true
     }
 }
