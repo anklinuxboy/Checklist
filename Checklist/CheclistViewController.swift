@@ -49,12 +49,33 @@ class ChecklistViewController: UITableViewController {
         }
     }
     
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "AddItemSegue" {
+            if let controller = segue.destination as? AddItemTableViewController {
+                controller.delegate = self
+                controller.todoList = todoList
+            }
+        } else if segue.identifier == "EditItemSegue" {
+            if let controller = segue.destination as? AddItemTableViewController {
+                if let cell = sender as? UITableViewCell,
+                    let indexPath = tableView.indexPath(for: cell) {
+                    let item = todoList.todos[indexPath.row]
+                    controller.itemToEdit = item
+                    controller.delegate = self
+                }
+            }
+        }
+    }
+    
     func configureCheckmark(for cell: UITableViewCell, at indexPath: IndexPath) {
+        guard let checkmark = cell.viewWithTag(1001) as? UILabel else {
+            return
+        }
         let isChecked = todoList.todos[indexPath.row].checked
         if isChecked {
-            cell.accessoryType = .checkmark
+            checkmark.text = "√"
         } else {
-            cell.accessoryType = .none
+            checkmark.text = ""
         }
         
         todoList.todos[indexPath.row].checked = !isChecked
@@ -62,9 +83,35 @@ class ChecklistViewController: UITableViewController {
     
     @IBAction func addItem(_ sender: UIButton) {
         let newRowIndex = todoList.todos.count
-        todoList.addListItem()
+        _ = todoList.addListItem()
         
         let indexPath = IndexPath(row: newRowIndex, section: 0)
+        tableView.insertRows(at: [indexPath], with: .automatic)
+    }
+}
+
+
+extension ChecklistViewController: AddItemViewDelegate {
+    func editClicked(_ controller: AddItemTableViewController, shouldEditItem item: ChecklistItem) {
+        if let index = todoList.todos.index(of: item) {
+            let indexPath = IndexPath(row: index, section: 0)
+            if let cell = tableView.cellForRow(at: indexPath) {
+                if let label = cell.viewWithTag(1000) as? UILabel {
+                    label.text = item.text
+                }
+            }
+        }
+        navigationController?.popViewController(animated: true)
+    }
+    
+    func cancelClicked(_ controller: AddItemTableViewController) {
+        navigationController?.popViewController(animated: true)
+    }
+    
+    func addClicked(_ controller: AddItemTableViewController, shouldAddItem item: ChecklistItem) {
+        navigationController?.popViewController(animated: true)
+        let rowIndex = todoList.todos.count
+        let indexPath = IndexPath(row: rowIndex, section: 0)
         tableView.insertRows(at: [indexPath], with: .automatic)
     }
 }

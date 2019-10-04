@@ -31,10 +31,11 @@ class TodoList {
         todos.append(row4Item)
     }
     
-    func addListItem() {
+    func addListItem() -> ChecklistItem {
         let item = ChecklistItem()
         item.text = "New Item"
         item.checked = true
         todos.append(item)
+        return item
     }
 }

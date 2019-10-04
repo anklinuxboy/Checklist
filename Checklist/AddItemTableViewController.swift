@@ -9,9 +9,22 @@
 import UIKit
 
 class AddItemTableViewController: UITableViewController {
+    
+    weak var delegate: AddItemViewDelegate?
+    weak var todoList: TodoList?
+    weak var itemToEdit: ChecklistItem?
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        if let item = itemToEdit {
+            title = "Edit Item"
+            textField.text = item.text
+            addButton.title = "Edit"
+            addButton.isEnabled = true
+        } else {
+            addButton.title = "Add"
+            addButton.isEnabled = false
+        }
         navigationItem.largeTitleDisplayMode = .never
     }
     
@@ -20,11 +33,22 @@ class AddItemTableViewController: UITableViewController {
     @IBOutlet weak var textField: UITextField!
 
     @IBAction func cancel(_ sender: UIBarButtonItem) {
-        navigationController?.popViewController(animated: true)
+        delegate?.cancelClicked(self)
     }
 
     @IBAction func add(_ sender: Any) {
-        navigationController?.popViewController(animated: true)
+        if let item = itemToEdit,
+            let text = textField.text {
+            item.text = text
+            delegate?.editClicked(self, shouldEditItem: item)
+        } else {
+            if let item = todoList?.addListItem(),
+                let todoText = textField.text {
+                    item.text = todoText
+                item.checked = false
+                delegate?.addClicked(self, shouldAddItem: item)
+            }
+        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -59,4 +83,10 @@ extension AddItemTableViewController: UITextFieldDelegate {
         
         return true
     }
+}
+
+protocol AddItemViewDelegate: class {
+    func cancelClicked(_ controller: AddItemTableViewController)
+    func addClicked(_ controller: AddItemTableViewController, shouldAddItem item: ChecklistItem)
+    func editClicked(_ controller: AddItemTableViewController, shouldEditItem item: ChecklistItem)
 }
